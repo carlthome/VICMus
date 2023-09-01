@@ -1,11 +1,13 @@
+from typing import Optional, Tuple
+
+import lightning as L
 import torch
 import torch.nn as nn
 from torch import Tensor
-from utils import generate_encodings, get_dataset
-from typing import Tuple, Optional
-import lightning as L
 from torchvision.transforms import Compose
-from transforms import RandomResizedCrop, MelSpectrogram
+
+from transforms import MelSpectrogram, RandomResizedCrop
+from utils import generate_encodings, get_dataset
 
 
 class EncodedDataset(nn.Module):
@@ -20,9 +22,7 @@ class EncodedDataset(nn.Module):
         self.encodings, self.labels = self.generate_dataset(args, module, subset)
         self.transforms = None
 
-    def get_integral_dataset(
-        self, args, backbone_args, subset: str
-    ) -> Tuple[Tensor, Tensor]:
+    def get_integral_dataset(self, args, backbone_args, subset: str) -> Tuple[Tensor, Tensor]:
         transforms = Compose(
             [
                 RandomResizedCrop(n_samples=args.n_samples),
@@ -34,9 +34,7 @@ class EncodedDataset(nn.Module):
         self.NUM_LABELS = dataset.NUM_LABELS
         return dataset
 
-    def generate_dataset(
-        self, args, module: L.LightningModule, subset: str
-    ) -> Tuple[Tensor, Tensor]:
+    def generate_dataset(self, args, module: L.LightningModule, subset: str) -> Tuple[Tensor, Tensor]:
         dataset = self.get_integral_dataset(args, module.args, subset)
         encodings, labels = generate_encodings(args, module, dataset, subset)
         encodings = torch.from_numpy(encodings)

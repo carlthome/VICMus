@@ -1,17 +1,17 @@
 from typing import Tuple
-from lightning.pytorch.utilities.types import TRAIN_DATALOADERS
 
+import lightning as L
 import numpy as np
 import torch
-from torch import Tensor
 import torch.nn.functional as F
-import lightning as L
-
-from utils import off_diagonal, get_dataset
-from optimizers import LARS, adjust_learning_rate, include_bias_and_norm
-from architectures import mlp
+from lightning.pytorch.utilities.types import TRAIN_DATALOADERS
+from torch import Tensor
 from torch.utils.data import DataLoader
+
+from architectures import mlp
+from optimizers import LARS, adjust_learning_rate, include_bias_and_norm
 from transforms import AudioSplit
+from utils import get_dataset, off_diagonal
 
 
 class VICReg(L.LightningModule):
@@ -46,14 +46,10 @@ class VICReg(L.LightningModule):
         std_loss = torch.mean(F.relu(1 - std_x)) / 2 + torch.mean(F.relu(1 - std_y)) / 2
         cov_x = (x.T @ x) / (self.args.batch_size - 1)
         cov_y = (y.T @ y) / (self.args.batch_size - 1)
-        cov_loss = off_diagonal(cov_x).pow_(2).sum().div(
+        cov_loss = off_diagonal(cov_x).pow_(2).sum().div(self.num_features) + off_diagonal(cov_y).pow_(2).sum().div(
             self.num_features
-        ) + off_diagonal(cov_y).pow_(2).sum().div(self.num_features)
-        loss = (
-            self.args.sim_coeff * repr_loss
-            + self.args.std_coeff * std_loss
-            + self.args.cov_coeff * cov_loss
         )
+        loss = self.args.sim_coeff * repr_loss + self.args.std_coeff * std_loss + self.args.cov_coeff * cov_loss
         return loss, (repr_loss, std_loss, cov_loss)
 
     def training_step(self, batch, batch_idx):

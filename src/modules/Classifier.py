@@ -1,11 +1,9 @@
+import lightning as L
 import numpy as np
-from sklearn import metrics
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-import lightning as L
+from sklearn import metrics
 
 
 class Classifier(L.LightningModule):
@@ -96,16 +94,12 @@ class Classifier(L.LightningModule):
         if self.multilabel:
             roc_auc = metrics.roc_auc_score(labels, predictions, average="macro")
             self.log(f"{key}_roc_auc", roc_auc)
-            average_precision = metrics.average_precision_score(
-                labels, predictions, average="macro"
-            )
+            average_precision = metrics.average_precision_score(labels, predictions, average="macro")
             self.log(f"{key}_pr_auc", average_precision)
         else:
-            accuracy = metrics.accuracy_score(
-                labels, predictions, normalize=True
-            )
+            accuracy = metrics.accuracy_score(labels, predictions, normalize=True)
             self.log(f"{key}_accuracy", accuracy)
-            
+
     def on_validation_epoch_end(self) -> None:
         self.__on_epoch_end(self.val_outputs, "val")
         self.val_outputs = []

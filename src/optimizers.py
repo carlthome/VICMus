@@ -1,10 +1,11 @@
 import math
+
 import torch
 from torch import optim
 
 
 class LARS(optim.Optimizer):
-    """Lars optimizer, code taken from VICReg repo"""
+    """Lars optimizer, code taken from VICReg repo."""
 
     def __init__(
         self,
@@ -42,17 +43,13 @@ class LARS(optim.Optimizer):
                 if g["weight_decay_filter"] is None or not g["weight_decay_filter"](p):
                     dp = dp.add(p, alpha=g["weight_decay"])
 
-                if g["lars_adaptation_filter"] is None or not g[
-                    "lars_adaptation_filter"
-                ](p):
+                if g["lars_adaptation_filter"] is None or not g["lars_adaptation_filter"](p):
                     param_norm = torch.norm(p)
                     update_norm = torch.norm(dp)
                     one = torch.ones_like(param_norm)
                     q = torch.where(
                         param_norm > 0.0,
-                        torch.where(
-                            update_norm > 0, (g["eta"] * param_norm / update_norm), one
-                        ),
+                        torch.where(update_norm > 0, (g["eta"] * param_norm / update_norm), one),
                         one,
                     )
                     dp = dp.mul(q)

@@ -1,8 +1,9 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset
-from transforms import MelSpectrogram
 from typing import Tuple
+
+import torch
+from torch.utils.data import Dataset
+
+from transforms import MelSpectrogram
 
 
 class TestDataset(Dataset):
@@ -15,7 +16,7 @@ class TestDataset(Dataset):
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor]:
         audio, label = self.dataset[index]
         batch = torch.split(audio, self.n_samples, dim=1)
-        last_part = audio[:, -self.n_samples:]
+        last_part = audio[:, -self.n_samples :]
         batch = batch[:-1] + (last_part,)
         batch = torch.cat(batch, dim=0)
         batch = batch.unsqueeze(dim=1)
